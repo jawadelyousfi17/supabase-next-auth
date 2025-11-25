@@ -7,6 +7,7 @@ import { login, googleLogIn } from '@/actions/auth';
 import { useActionState, useEffect } from 'react';
 import GoogleSignInButton from '@/components/GoogleSignIn';
 import toast, { Toaster } from 'react-hot-toast';
+import Link from 'next/link';
 
 const LoginComp = () => {
     const [state, formAction, isPending] = useActionState(login, null);
@@ -17,7 +18,9 @@ const LoginComp = () => {
 
     return (
         <div className="flex flex-col gap-2 mx-auto mt-20 max-w-80">
-            <h1>Login</h1>
+                        <GoogleSignInButton />
+
+            <h1 className='text-center'>Or login</h1>
             <form action={formAction} className="flex flex-col gap-2">
                 <Input
                     type="email"
@@ -36,9 +39,10 @@ const LoginComp = () => {
                 <Button type="submit" disabled={isPending}>
                     {isPending ? 'Logging in...' : 'Log in'}
                 </Button>
-                {/* {state?.error && toast.error('error')} */}
+                <Button variant='link'>
+                    <Link href='/password/forgot-password'>Forget password?</Link>
+                </Button>
             </form>
-            <GoogleSignInButton />
         </div>
     );
 };

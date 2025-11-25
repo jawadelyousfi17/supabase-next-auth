@@ -7,11 +7,21 @@ import { CircleCheck } from 'lucide-react';
 import { CircleX } from 'lucide-react';
 
 import { resetPassword } from '@/actions/resetPassword';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { Spinner } from '@/components/ui/spinner';
+import toast from 'react-hot-toast';
 
 const ResetPassword = () => {
     const [state, formAction, isPending] = useActionState(resetPassword, null);
+
+    useEffect(() => {
+        if (state?.error) {
+            toast.error(state.error);
+        }
+        if (state?.message) {
+            toast.success(state.message);
+        }
+    }, [state]);
 
     return (
         <div className="">
@@ -24,7 +34,9 @@ const ResetPassword = () => {
                     </p>
                 )}
                 {state?.message && (
-                    <p className="text-green-500"><CircleCheck></CircleCheck> {state.message}</p>
+                    <p className="text-green-500">
+                        <CircleCheck></CircleCheck> {state.message}
+                    </p>
                 )}
                 <Input
                     name="currentPassword"

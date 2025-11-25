@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { updateName } from '@/actions/changeName';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Spinner } from '@/components/ui/spinner';
-import ResetPassword from '../settings/reset-password/page';
+import ResetPassword from '@/components/changePassword';
 
 import {
     Card,

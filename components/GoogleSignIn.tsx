@@ -1,23 +1,22 @@
 // components/GoogleSignInButton.tsx
-'use client'
+'use client';
 
-import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { Button } from './ui/button'
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { Button } from './ui/button';
 
 type Props = {
-    label?: string;
-}
+  label?: string;
+};
 
-export default function GoogleSignInButton({label}:Props) {
-  const [isLoading, setIsLoading] = useState(false)
-  const supabase = createClient()
-  const router = useRouter()
+export default function GoogleSignInButton({ label }: Props) {
+  const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
 
   async function handleGoogleSignIn() {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -27,21 +26,20 @@ export default function GoogleSignInButton({label}:Props) {
           prompt: 'consent',
         },
       },
-    })
+    });
 
     if (error) {
-      console.error('Error signing in with Google:', error.message)
-      setIsLoading(false)
+      console.error('Error signing in with Google:', error.message);
+      setIsLoading(false);
     }
-    
-    // The redirect happens automatically
   }
 
   return (
     <Button
       onClick={handleGoogleSignIn}
       disabled={isLoading}
-      className="flex items-center justify-center gap-2 "
+      className="flex items-center justify-center gap-2 w-full"
+      variant='outline'
     >
       {isLoading ? (
         'Loading...'
@@ -69,5 +67,5 @@ export default function GoogleSignInButton({label}:Props) {
         </>
       )}
     </Button>
-  )
+  );
 }

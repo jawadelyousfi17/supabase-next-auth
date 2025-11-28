@@ -8,6 +8,7 @@ export type T_UserInfo = {
     email: string;
     id: string;
     avatar: string;
+    role: any;
 };
 
 export const getUserInfo = async () => {

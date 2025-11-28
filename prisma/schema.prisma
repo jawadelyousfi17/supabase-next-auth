@@ -4,6 +4,12 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
@@ -15,11 +21,14 @@ datasource db {
 }
 
 model User {
-  id     String @id @default(uuid())
-  name   String
-  email  String @unique
-  avatar String @default("http://localhost:3000/icons/avatar-1.png")
-  tasks  Task[]
+  id                  String               @id @default(uuid())
+  name                String
+  email               String               @unique
+  avatar              String               @default("http://localhost:3000/icons/avatar-1.png")
+  role                Role                 @default(EMPLOYEE)
+  tasks               Task[]
+  organizations       Organization[]
+  organizationMembers OrganizationMember[]
 }
 
 model Task {
@@ -30,12 +39,63 @@ model Task {
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   createdAt   DateTime @default(now())
-  updtatedAt  DateTime @updatedAt
+  updatedAt   DateTime @updatedAt
   priority    Priority @default(LOW)
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  joinedAt       DateTime     @default(now())
+  role           OrgRole
+}
+
+model Organization {
+  id                  String               @id @default(uuid())
+  name                String
+  slug                String
+  description         String
+  logo_url            String
+  owner_id            User                 @relation(fields: [userId], references: [id])
+  userId              String
+  website             String
+  industry            String
+  company_size        CompanySize
+  adress              String
+  country             String
+  timzone             String               @default("UTC")
+  is_active           Boolean              @default(true)
+  created_at          DateTime             @default(now())
+  updated_at          DateTime             @updatedAt
+  members_count       Int                  @default(1)
+  organizationMembers OrganizationMember[]
+}
+
+enum CompanySize {
+  SMALL
+  MEDIUM
+  LARGE
+  ENTRPRISE
 }
 
 enum Priority {
   LOW
   INTERMEDIATE
   HIGH
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  DIRECTOR
+  CEO
+}
+
+enum OrgRole {
+  OWNER
+  MANAGER
+  EMPLOYEE
 }

@@ -22,7 +22,7 @@ export async function getMembersData(orgId: string): Promise<T_Member[]> {
             avatar: true,
           },
         },
-      },
+      }, 
     });
 
     const allMembers: T_Member[] = [];

@@ -33,7 +33,7 @@ export async function uploadLogo(file: File): Promise<T_UploadState> {
     if (error || !user) return { error: 'You must be logged in to upload' };
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}-avatar.${fileExt}`;
+    const fileName = `${user.id}-${Date.now()}-logo.${fileExt}`;
     const filePath = `${user.id}/${fileName}`;
 
     {
@@ -48,15 +48,6 @@ export async function uploadLogo(file: File): Promise<T_UploadState> {
       const {
         data: { publicUrl },
       } = supabase.storage.from('avatars').getPublicUrl(data.path);
-
-      await prisma.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          avatar: publicUrl,
-        },
-      });
 
       return {
         message: 'avatar uploaded succesfauly',

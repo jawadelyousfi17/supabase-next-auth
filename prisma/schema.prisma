@@ -29,18 +29,37 @@ model User {
   tasks               Task[]
   organizations       Organization[]
   organizationMembers OrganizationMember[]
+  projectMemebers     ProjectMember[]
+  taskMembers         TaskMember[]
+  projects            Project[]
 }
 
 model Task {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   title       String
   description String
   completed   Boolean
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  priority    Priority @default(LOW)
+  creator     User         @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  dueDate     DateTime?
+  priority    Priority     @default(LOW)
+  taskStatus  TaskStatus   @default(NOT_STARTED)
+  project     Project      @relation(fields: [projectId], references: [id])
+  projectId   String
+  assignees   TaskMember[]
+}
+
+model TaskMember {
+  id     String      @id @default(uuid())
+  task   Task        @relation(fields: [taskId], references: [id])
+  taskId String
+  user   User        @relation(fields: [userId], references: [id])
+  userId String
+  role   ProjectRole
+
+  @@unique([taskId, userId]) // Prevent duplicate assignment
 }
 
 model OrganizationMember {
@@ -51,6 +70,8 @@ model OrganizationMember {
   userId         String
   joinedAt       DateTime     @default(now())
   role           OrgRole
+
+  @@unique([organizationId, userId])
 }
 
 model Organization {
@@ -61,17 +82,51 @@ model Organization {
   logo_url            String
   owner_id            User                 @relation(fields: [userId], references: [id])
   userId              String
-  website             String
-  industry            String
-  company_size        CompanySize
-  adress              String
-  country             String
+  website             String?
+  industry            String?
+  company_size        CompanySize?
+  adress              String?
+  country             String?
   timzone             String               @default("UTC")
   is_active           Boolean              @default(true)
   created_at          DateTime             @default(now())
   updated_at          DateTime             @updatedAt
   members_count       Int                  @default(1)
   organizationMembers OrganizationMember[]
+  projects            Project[]
+}
+
+model Project {
+  id              String          @id @default(uuid())
+  name            String
+  slug            String
+  description     String?
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  organizationId  String
+  creator         User            @relation(fields: [creatorId], references: [id])
+  projectMemebers ProjectMember[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  startDate       DateTime?
+  dueDate         DateTime?
+  projectStatus   ProjectStatus   @default(PLANNING)
+  tasks           Task[]
+  color           String
+  taskCount       Int             @default(0)
+  membersCount    Int             @default(1)
+  creatorId       String
+}
+
+model ProjectMember {
+  id        String      @id @default(uuid())
+  project   Project     @relation(fields: [projectId], references: [id])
+  projectId String
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  role      ProjectRole
+  joinedAt  DateTime    @default(now())
+
+  @@unique([projectId, userId])
 }
 
 enum CompanySize {
@@ -98,4 +153,35 @@ enum OrgRole {
   OWNER
   MANAGER
   EMPLOYEE
+}
+
+enum ProjectRole {
+  MANAGER
+  EMPLOYEE
+  ANALYSIST
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  IGNORED
+  ARCHIVED
+}
+
+enum TaskColor {
+  BLUE
+  RED
+  PURPLE
+  GREEN
+  ORANGE
+  YELLOW
 }

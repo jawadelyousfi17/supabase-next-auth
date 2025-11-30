@@ -31,15 +31,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { ArrowDown } from 'lucide-react';
 import { ArrowUp } from 'lucide-react';
-import CreateUser from './createUser';
 import { UpdateMemberPreference } from './updateUser';
 import { useEffect, useOptimistic, useState, useDeferredValue } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Organization } from '@/lib/generated/prisma';
+import { Organization, Project } from '@/lib/generated/prisma';
+import { T_MemberWithUser } from '@/actions/projects/getProjectById';
+import AddUserToProjectComp from './AddUserToProject';
 
 interface T_Props {
-  members: T_Member[] | null;
-  organization: Organization | null;
+  members: T_MemberWithUser[] | null;
+  project: Project;
 }
 
 export type OptimisticAction =
@@ -52,69 +53,61 @@ export type OptimisticAction =
       member: T_Member;
     };
 
-const MemebersTable = ({ members, organization }: T_Props) => {
+const ProjectMemebersTable = ({ members, project }: T_Props) => {
   const [sortVal, setSortVal] = useState('az');
   const [searchTerm, setSearchTerm] = useState('');
   const deferredSearch = useDeferredValue(searchTerm);
 
-  const [optimisticMembers, addOptimisticMember] = useOptimistic(
-    members,
-    (
-      state: T_Member[] | null,
-      newMember: OptimisticAction
-    ): T_Member[] | null => {
-      if (newMember.action === 'delete') {
-        if (state !== null)
-          return state?.filter((member) => member.id !== newMember.id);
-        return null;
-      } else if (newMember.action === 'add') {
-        if (state !== null) return [newMember.member, ...state];
-        return null;
-      }
-      return state;
-    }
-  );
-  const filtred = optimisticMembers?.filter(
-    (member) =>
-      member.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
-      member.email.toLowerCase().includes(deferredSearch.toLowerCase())
-  );
+  // const [optimisticMembers, addOptimisticMember] = useOptimistic(
+  //   members,
+  //   (
+  //     state: T_Member[] | null,
+  //     newMember: OptimisticAction
+  //   ): T_Member[] | null => {
+  //     if (newMember.action === 'delete') {
+  //       if (state !== null)
+  //         return state?.filter((member) => member.id !== newMember.id);
+  //       return null;
+  //     } else if (newMember.action === 'add') {
+  //       if (state !== null) return [newMember.member, ...state];
+  //       return null;
+  //     }
+  //     return state;
+  //   }
+  // );
+  // const filtred = optimisticMembers?.filter(
+  //   (member) =>
+  //     member.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+  //     member.email.toLowerCase().includes(deferredSearch.toLowerCase())
+  // );
+  // let sortedMembers = [...(filtred || [])].sort((a, b) => {
+  //   switch (sortVal) {
+  //     case 'az':
+  //       return a.name.localeCompare(b.name);
+  //     case 'za':
+  //       return b.name.localeCompare(a.name);
+  //     case 'dup':
+  //       return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
+  //     case 'ddown':
+  //       return new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime();
+  //     case 'role':
+  //       const roles: Record<string, number> = {
+  //         OWNER: 0,
+  //         MANAGER: 1,
+  //         EMPLOYEE: 2,
+  //       };
+  //       return (roles[a.role] || 2) - (roles[b.role] || 2);
+  //     default:
+  //       return 0;
+  //   }
+  // });
 
-  let sortedMembers = [...(filtred || [])].sort((a, b) => {
-    switch (sortVal) {
-      case 'az':
-        return a.name.localeCompare(b.name);
-      case 'za':
-        return b.name.localeCompare(a.name);
-      case 'dup':
-        return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
-      case 'ddown':
-        return new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime();
-      case 'role':
-        const roles: Record<string, number> = {
-          OWNER: 0,
-          MANAGER: 1,
-          EMPLOYEE: 2,
-        };
-        return (roles[a.role] || 2) - (roles[b.role] || 2);
-      default:
-        return 0;
-    }
-  });
   return (
     <div className="py-20 max-w-3xl mx-auto flex flex-col gap-4">
       <div className="flex items-center gap-4 mb-4">
-        <Avatar className="h-16 w-16 rounded-lg border">
-          <AvatarImage src={organization?.logo_url} alt={organization?.name} />
-          <AvatarFallback className="rounded-lg">OR</AvatarFallback>
-        </Avatar>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {organization?.name}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your team members
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
+          <p className="text-sm text-muted-foreground">Manage your project</p>
         </div>
       </div>
 
@@ -167,7 +160,10 @@ const MemebersTable = ({ members, organization }: T_Props) => {
           </Select>
         </div>
         <div className=" space-x-2">
-          <CreateUser addOptimisticAction={addOptimisticMember} />
+          <AddUserToProjectComp
+            organizationId={project.organizationId}
+            projectMembers={members}
+          />
           <Button variant={'ghost'}>
             <Settings2 />
           </Button>
@@ -187,7 +183,7 @@ const MemebersTable = ({ members, organization }: T_Props) => {
             </TableHeader>
             <TableBody>
               <AnimatePresence mode="popLayout">
-                {sortedMembers?.length === 0 ? (
+                {members?.length === 0 ? (
                   <motion.tr
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -199,7 +195,7 @@ const MemebersTable = ({ members, organization }: T_Props) => {
                     </TableCell>
                   </motion.tr>
                 ) : (
-                  sortedMembers?.map((member) => {
+                  members?.map((member) => {
                     return (
                       <motion.tr
                         key={member.id}
@@ -214,19 +210,19 @@ const MemebersTable = ({ members, organization }: T_Props) => {
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9 border">
                               <AvatarImage
-                                src={member.avatar}
-                                alt={member.name}
+                                src={member.user.avatar}
+                                alt={member.user.name}
                               />
                               <AvatarFallback>
-                                {member.name.slice(0, 2).toUpperCase()}
+                                {member.user.name.slice(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
                               <span className="font-medium text-sm">
-                                {member.name}
+                                {member.user.name}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                {member.email}
+                                {member.user.email}
                               </span>
                             </div>
                           </div>
@@ -240,10 +236,7 @@ const MemebersTable = ({ members, organization }: T_Props) => {
                           {new Date(member.joinedAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right pr-6">
-                          <UpdateMemberPreference
-                            member={member}
-                            addOptimisticAtion={addOptimisticMember}
-                          />
+                          <UpdateMemberPreference member={member} />
                         </TableCell>
                       </motion.tr>
                     );
@@ -258,4 +251,4 @@ const MemebersTable = ({ members, organization }: T_Props) => {
   );
 };
 
-export default MemebersTable;
+export default ProjectMemebersTable;

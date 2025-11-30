@@ -31,6 +31,7 @@ interface ProjectCardProps {
   status?: 'active' | 'completed' | 'on-hold';
   createdAt?: Date;
   onClick?: () => void;
+  isManager: boolean;
 }
 
 export function ProjectCard({
@@ -41,6 +42,7 @@ export function ProjectCard({
   memberCount = 0,
   status = 'active',
   createdAt,
+  isManager,
   onClick,
 }: ProjectCardProps) {
   const statusConfig = {
@@ -92,24 +94,24 @@ export function ProjectCard({
               </div>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className=" hover:bg-accent rounded-lg transition-colors"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Edit Project</DropdownMenuItem>
-                <DropdownMenuItem>View Details</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
-                  Delete Project
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {isManager && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className=" hover:bg-accent rounded-lg transition-colors"
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <Link href={`/projects/manage/${projectId}`}>
+                    <DropdownMenuItem>Edit Project</DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem>View Details</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </CardHeader>
 
@@ -167,7 +169,7 @@ export function ProjectCard({
               )}
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground">Manager</p>
+              <p className="text-xs text-muted-foreground">By</p>
               <p className="text-sm font-medium truncate">
                 {projectManager.name}
               </p>

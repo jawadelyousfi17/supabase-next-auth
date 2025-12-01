@@ -82,8 +82,8 @@ export async function deleteMemeber({
     where: {
       id: memberId,
     },
-    select: {
-      role: true,
+    include: {
+      user: true,
     },
   });
 
@@ -97,7 +97,31 @@ export async function deleteMemeber({
   if (ownersCount == 1 && member?.role === 'OWNER')
     return { error: 'You can not delete the only owner of the Organization' };
 
+  // TODO when deleting a user also remove Him from all projects too __
   try {
+    const projects = await prisma.project.findMany({
+      where: {
+        organizationId: organizationId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const memberProj = await prisma.project.findMany({
+      where: {
+        organizationId: organizationId,
+        projectMemebers: {
+          some: {
+            userId: member?.user.id,
+          },
+        },
+      },
+    });
+
+    const memberProjIds = memberProj.map((m) => m.id);
+    const projectsIds = projects.map((p) => p.id);
+
     await prisma.$transaction([
       prisma.organizationMember.delete({
         where: {
@@ -114,7 +138,29 @@ export async function deleteMemeber({
           },
         },
       }),
+      prisma.projectMember.deleteMany({
+        where: {
+          userId: member?.user.id as string,
+          projectId: {
+            in: projectsIds,
+          },
+        },
+      }),
+      prisma.project.updateMany({
+        where: {
+          id: {
+            in: memberProjIds,
+          },
+        },
+        data: {
+          membersCount: {
+            decrement: 1,
+          },
+        },
+      }),
     ]);
+
+    
     revalidatePath('/organizations/manage/[organizationId]');
 
     return { message: 'Member deleted' };

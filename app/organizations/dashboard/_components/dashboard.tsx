@@ -29,6 +29,7 @@ import {
   T_Project,
 } from '@/actions/projects/getProjectsByOrganizationId';
 import NoProjectFound from './NoProjectFound';
+import { projectStatusConfig } from '@/utils/basic/project';
 
 type T_Props = {
   organization: Organization | null;
@@ -42,16 +43,7 @@ const DashboardOrg = ({ organization, projects, isAdmin }: T_Props) => {
 
   const hasProjects = projects && projects.length > 0;
 
-  const getStatus = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'completed';
-      case 'ON_HOLD':
-        return 'on-hold';
-      default:
-        return 'active';
-    }
-  };
+ 
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -149,7 +141,7 @@ const DashboardOrg = ({ organization, projects, isAdmin }: T_Props) => {
                     }}
                     taskCount={project.taskCount}
                     memberCount={project.membersCount}
-                    status={getStatus(project.projectStatus)}
+                    status={project.projectStatus}
                     createdAt={project.createdAt}
                     isManager={project.isManager}
                   />

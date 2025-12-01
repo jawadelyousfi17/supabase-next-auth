@@ -1,6 +1,6 @@
 import { Circle, Clock, CheckCircle2, Plus } from 'lucide-react';
 import { TaskCard } from './TaskCard';
-
+import { Priority, TaskStatus } from '@/lib/generated/prisma';
 
 import CBreadComp from './customs/CBreadComp';
 
@@ -33,16 +33,16 @@ const Dashboard = async () => {
 
           <div className="overflow-y-auto space-y-3 pb-4">
             <TaskCard
+              id="demo-1"
               taskName="Task 1"
-              priority="medium"
+              priority={Priority.INTERMEDIATE}
               isCompleted={false}
               dateCreated={new Date('2025-11-15')}
               deadline={new Date('2025-11-30')}
               taskCreatorName="Jawad elyousfi"
               taskCreatorAvatar=""
               taskCreatorLabel="Project manager"
-              status="not_started"
-              category="DEV OPS"
+              status={TaskStatus.NOT_STARTED}
             />
           </div>
         </div>
@@ -66,16 +66,16 @@ const Dashboard = async () => {
 
           <div className="overflow-y-auto space-y-3 pb-4">
             <TaskCard
+              id="demo-2"
               taskName="Task 1"
-              priority="medium"
+              priority={Priority.INTERMEDIATE}
               isCompleted={false}
               dateCreated={new Date('2025-11-15')}
               deadline={new Date('2025-11-30')}
               taskCreatorName="Jawad elyousfi"
               taskCreatorAvatar=""
               taskCreatorLabel="Project manager"
-              status="in_progress"
-              category="DEV OPS"
+              status={TaskStatus.IN_PROGRESS}
             />
           </div>
         </div>
@@ -99,42 +99,42 @@ const Dashboard = async () => {
 
           <div className="overflow-y-auto space-y-3 pb-4">
             <TaskCard
+              id="demo-3"
               taskName="Task 1"
-              priority="high"
+              priority={Priority.HIGH}
               isCompleted={false}
               dateCreated={new Date('2025-11-15')}
               deadline={new Date('2025-12-30')}
               taskCreatorName="Jawad elyousfi"
               taskCreatorAvatar=""
               taskCreatorLabel="Project manager"
-              status="finished"
-              category="DEV OPS"
+              status={TaskStatus.COMPLETED}
             />
 
             <TaskCard
+              id="demo-4"
               taskName="Task 1"
-              priority="high"
+              priority={Priority.HIGH}
               isCompleted={false}
               dateCreated={new Date('2025-11-15')}
               deadline={new Date('2025-12-30')}
               taskCreatorName="Jawad elyousfi"
               taskCreatorAvatar=""
               taskCreatorLabel="Project manager"
-              status="finished"
-              category="DEV OPS"
+              status={TaskStatus.COMPLETED}
             />
 
             <TaskCard
+              id="demo-5"
               taskName="Task 1"
-              priority="high"
+              priority={Priority.HIGH}
               isCompleted={false}
               dateCreated={new Date('2025-11-15')}
               deadline={new Date('2025-12-30')}
               taskCreatorName="Jawad elyousfi"
               taskCreatorAvatar=""
               taskCreatorLabel="Project manager"
-              status="finished"
-              category="DEV OPS"
+              status={TaskStatus.COMPLETED}
             />
           </div>
         </div>

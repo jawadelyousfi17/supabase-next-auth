@@ -18,6 +18,8 @@ import {
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
 import Link from 'next/link';
+import { ProjectStatus } from '@/lib/generated/prisma';
+import { projectStatusConfig } from '@/utils/basic/project';
 
 interface ProjectCardProps {
   projectName: string;
@@ -28,7 +30,7 @@ interface ProjectCardProps {
   };
   taskCount?: number;
   memberCount?: number;
-  status?: 'active' | 'completed' | 'on-hold';
+  status: ProjectStatus;
   createdAt?: Date;
   onClick?: () => void;
   isManager: boolean;
@@ -40,7 +42,7 @@ export function ProjectCard({
   projectManager,
   taskCount = 0,
   memberCount = 0,
-  status = 'active',
+  status,
   createdAt,
   isManager,
   onClick,
@@ -75,7 +77,7 @@ export function ProjectCard({
       year: 'numeric',
     }).format(date);
 
-  const currentConfig = statusConfig[status];
+  const currentConfig = projectStatusConfig[status];
 
   return (
     <Link href={`/projects/${projectId}`} onClick={onClick}>
@@ -116,13 +118,10 @@ export function ProjectCard({
         </CardHeader>
 
         <CardContent className="space-y-2">
-          <Badge variant={currentConfig.variant}>
-            {status === 'active' && (
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2" />
-            )}
-            {status === 'completed' && (
-              <CheckCircle2 className="w-3 h-3 mr-1" />
-            )}
+          <Badge className={`${currentConfig.badge} border-0 gap-2`}>
+            <span
+              className={`w-2 h-2 rounded-full ${currentConfig.dot}`}
+            ></span>
             {currentConfig.label}
           </Badge>
 

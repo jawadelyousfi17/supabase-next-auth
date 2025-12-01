@@ -22,22 +22,41 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Link from 'next/link';
+import { Priority, TaskStatus } from '@/lib/generated/prisma';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+
+import * as React from 'react';
+import { Minus, Plus } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import getTaskById, { T_TaskWithData } from '@/actions/tasks/getTaskById';
 
 interface TaskCardProps {
+  id: string;
   taskCreatorName: string;
   taskCreatorLabel: string;
   taskCreatorAvatar: string;
   taskName: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'not_started' | 'in_progress' | 'finished';
+  priority: Priority;
+  status: TaskStatus;
   isCompleted: boolean;
   dateCreated: Date;
-  deadline: Date;
-  category: string;
+  deadline: Date | null;
   onToggleComplete?: () => void;
 }
 
 export function TaskCard({
+  id,
   taskName,
   priority,
   isCompleted,
@@ -47,7 +66,6 @@ export function TaskCard({
   taskCreatorAvatar,
   taskCreatorLabel,
   taskCreatorName,
-  category,
   onToggleComplete,
 }: TaskCardProps) {
   const formatDate = (date: Date) => {
@@ -59,84 +77,83 @@ export function TaskCard({
   };
 
   const pathname = usePathname();
-  const newPath = `${pathname}/${'tasky8yy'}`;
+  const newPath = `${pathname}/${id}`;
+  const [goal, setGoal] = React.useState(350);
+  const [task, setTask] = React.useState<T_TaskWithData | null>(null);
+  const [open, setOpen] = React.useState(false);
 
-  const isOverdue = !isCompleted && new Date() > deadline;
-  const progress = calculateProgress(dateCreated, deadline);
+  function onClick(adjustment: number) {
+    setGoal(Math.max(200, Math.min(400, goal + adjustment)));
+  }
+
+  React.useEffect(() => {
+    async function getTaskData() {
+      const task = await getTaskById(id);
+      setTask(task.data);
+    }
+
+    if (open) getTaskData();
+  }, [open]);
 
   return (
-    <Link
-      href={newPath}
-      className="flex flex-col gap-3 p-4 bg-card max-w-sm border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
-    >
-      {/* TOP OF CARD */}
-      <div className="flex flex-row justify-between items-start">
-        <div className="flex gap-3 items-center">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center text-primary-foreground text-xs font-semibold">
-            {taskCreatorName.slice(0, 2)}
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <p className="font-semibold text-sm leading-tight text-foreground">
-              {taskCreatorName}
-            </p>
-            <p className="text-xs leading-tight text-muted-foreground">
-              {taskCreatorLabel}
-            </p>
-          </div>
-        </div>
-        <div>
-          <C_Status variant={status}></C_Status>
-        </div>
-      </div>
+    <Drawer onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
+        <div
+          // href={newPath}
+          className="group flex flex-col gap-3 p-4 bg-card border border-border rounded-lg hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer"
+        >
+          {/* Task Title */}
+          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+            {taskName}
+          </h3>
 
-      {/* MAIN CONTENT */}
-      <div className="flex flex-col gap-4">
-        <h3 className="text-base font-semibold leading-snug text-foreground">
-          {taskName}
-        </h3>
-
-        <div className="flex flex-col gap-2.5 text-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-foreground">
-              <Calendar size={15} className="text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Start</span>
-              <span className="font-medium text-foreground">
-                {formatDate(dateCreated)}
-              </span>
+          {/* Due Date */}
+          {deadline && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{formatDate(deadline)}</span>
             </div>
-            <div className="flex items-center gap-2 text-foreground">
-              <Calendar size={15} className="text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Due</span>
-              <span className="font-medium text-foreground">
-                {formatDate(deadline)}
-              </span>
-            </div>
-          </div>
+          )}
 
-          <div className="h-px bg-border" />
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {category}
-              </span>
-            </div>
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-2">
             <C_Badge variant={priority} />
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  Manager
+                </span>
+                <span className="text-xs text-foreground font-medium">
+                  {taskCreatorName}
+                </span>
+              </div>
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={taskCreatorAvatar} alt={taskCreatorName} />
+                <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-primary-foreground text-xs font-semibold">
+                  {taskCreatorName.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
           </div>
         </div>
+      </DrawerTrigger>
+      <DrawerContent>
+        <div className="mx-auto w-full max-w-sm">
+          <DrawerHeader>
+            <DrawerTitle>Move Goal</DrawerTitle>
+            <DrawerDescription>Set your daily activity goal.</DrawerDescription>
+          </DrawerHeader>
 
-        <div className="flex gap-1.5 flex-wrap">
-          <Badge variant="outline">react</Badge>
-          <Badge variant="outline">DEV</Badge>
-          <Badge variant="outline">DevOps</Badge>
+          <></>
+
+          <DrawerFooter>
+            <Button>Submit</Button>
+            <DrawerClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
         </div>
-      </div>
-
-      {/* <Progress
-        value={progress}
-        className="absolute top-0 left-0 rounded-none h-1"
-      /> */}
-    </Link>
+      </DrawerContent>
+    </Drawer>
   );
 }

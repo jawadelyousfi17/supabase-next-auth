@@ -1,9 +1,7 @@
-import CBreadComp from '@/components/customs/CBreadComp';
-
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <div className='px-28'>{children}</div>;
 }

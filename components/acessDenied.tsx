@@ -7,7 +7,7 @@ import { Card, CardContent } from './ui/card';
 
 const AccessDenied = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-b from-background to-muted/20">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

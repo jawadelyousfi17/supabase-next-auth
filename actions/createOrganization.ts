@@ -40,7 +40,11 @@ export const createOrg = async (
         country: props.country,
         timzone: props.timeZone,
         slug: slugify(props.organizationName),
-        logo_url: props.logo || 'http://localhost:3000/icons/avatar.png',
+        logo_url:
+          props.logo ||
+          `${
+            process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+          }/icons/avatar.png`,
       },
     });
 

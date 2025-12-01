@@ -1,15 +1,22 @@
+import { Priority } from '@/lib/generated/prisma';
 import { cn } from '@/lib/utils';
+import { Flag } from 'lucide-react';
 
 type T_Props = {
-  variant: 'low' | 'high' | 'medium';
+  variant: Priority;
 };
 
 const C_Badge = ({ variant }: T_Props) => {
-  const colors = {
-    low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    medium:
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-    high: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  const colors: Record<Priority, string> = {
+    LOW: ' text-blue-800  dark:text-blue-300',
+    INTERMEDIATE: ' text-yellow-800  dark:text-yellow-300',
+    HIGH: ' text-red-800  dark:text-red-300',
+  };
+
+  const labels: Record<Priority, string> = {
+    LOW: 'Low',
+    INTERMEDIATE: 'Medium',
+    HIGH: 'High',
   };
 
   return (
@@ -19,10 +26,8 @@ const C_Badge = ({ variant }: T_Props) => {
         colors[variant]
       )}
     >
-      <span className="w-1.5 h-1.5 rounded-full bg-current font-bold" />
-     <span className='font-bold'>
-      {variant} 
-      </span> 
+      <Flag className="w-3 h-3" />
+      <span className="font-bold">{labels[variant]}</span>
     </div>
   );
 };

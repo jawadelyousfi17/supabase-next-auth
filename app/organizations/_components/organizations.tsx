@@ -86,7 +86,7 @@ const Organizations = ({ organizations }: T_Props) => {
                               alt={o.name}
                               className="object-cover"
                             />
-                            <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+                            <AvatarFallback className="rounded-xl bg-linear-to-br from-primary/20 to-primary/5">
                               <Building2 className="h-6 w-6 text-primary" />
                             </AvatarFallback>
                           </Avatar>

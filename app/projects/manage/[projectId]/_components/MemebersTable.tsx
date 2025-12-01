@@ -34,9 +34,13 @@ import { ArrowUp } from 'lucide-react';
 import { UpdateMemberPreference } from './updateUser';
 import { useEffect, useOptimistic, useState, useDeferredValue } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Organization, Project } from '@/lib/generated/prisma';
+import { Organization, Project, ProjectStatus } from '@/lib/generated/prisma';
 import { T_MemberWithUser } from '@/actions/projects/getProjectById';
 import AddUserToProjectComp from './AddUserToProject';
+import { projectStatusConfig } from '@/utils/basic/project';
+import { Spinner } from '@/components/ui/spinner';
+import { updateProjectStatus } from '@/actions/projects/updateProjectPref';
+import toast from 'react-hot-toast';
 
 interface T_Props {
   members: T_MemberWithUser[] | null;
@@ -56,58 +60,96 @@ export type OptimisticAction =
 const ProjectMemebersTable = ({ members, project }: T_Props) => {
   const [sortVal, setSortVal] = useState('az');
   const [searchTerm, setSearchTerm] = useState('');
-  const deferredSearch = useDeferredValue(searchTerm);
+  const [projectStat, setProjectStat] = useState<ProjectStatus>(
+    project.projectStatus
+  );
+  const [changeIsPending, setChangeIsPending] = useState(false);
+  const currentStatus = projectStatusConfig[project.projectStatus];
 
-  // const [optimisticMembers, addOptimisticMember] = useOptimistic(
-  //   members,
-  //   (
-  //     state: T_Member[] | null,
-  //     newMember: OptimisticAction
-  //   ): T_Member[] | null => {
-  //     if (newMember.action === 'delete') {
-  //       if (state !== null)
-  //         return state?.filter((member) => member.id !== newMember.id);
-  //       return null;
-  //     } else if (newMember.action === 'add') {
-  //       if (state !== null) return [newMember.member, ...state];
-  //       return null;
-  //     }
-  //     return state;
-  //   }
-  // );
-  // const filtred = optimisticMembers?.filter(
-  //   (member) =>
-  //     member.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
-  //     member.email.toLowerCase().includes(deferredSearch.toLowerCase())
-  // );
-  // let sortedMembers = [...(filtred || [])].sort((a, b) => {
-  //   switch (sortVal) {
-  //     case 'az':
-  //       return a.name.localeCompare(b.name);
-  //     case 'za':
-  //       return b.name.localeCompare(a.name);
-  //     case 'dup':
-  //       return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
-  //     case 'ddown':
-  //       return new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime();
-  //     case 'role':
-  //       const roles: Record<string, number> = {
-  //         OWNER: 0,
-  //         MANAGER: 1,
-  //         EMPLOYEE: 2,
-  //       };
-  //       return (roles[a.role] || 2) - (roles[b.role] || 2);
-  //     default:
-  //       return 0;
-  //   }
-  // });
+  const handleChange = async (e: string) => {
+    setChangeIsPending(true);
+    const { error, message } = await updateProjectStatus(
+      project.id,
+      e as ProjectStatus
+    );
+    setChangeIsPending(false);
+    if (message) setProjectStat(e as ProjectStatus);
+    if (error) toast.error(error);
+  };
 
   return (
     <div className="py-20 max-w-3xl mx-auto flex flex-col gap-4">
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center justify-between gap-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
           <p className="text-sm text-muted-foreground">Manage your project</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={projectStat}
+            onValueChange={(e: string) => handleChange(e)}
+          >
+            <SelectTrigger className="w-[180px] border-0">
+              {changeIsPending && <Spinner />}
+
+              <SelectValue placeholder="change project status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Prject status</SelectLabel>
+                <SelectItem value="PLANNING">
+                  <Badge
+                    className={`${projectStatusConfig['PLANNING'].badge} border-0 gap-2`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${projectStatusConfig['PLANNING'].dot}`}
+                    ></span>
+                    {projectStatusConfig['PLANNING'].label}
+                  </Badge>
+                </SelectItem>
+                <SelectItem value="ACTIVE">
+                  <Badge
+                    className={`${projectStatusConfig['ACTIVE'].badge} border-0 gap-2`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${projectStatusConfig['ACTIVE'].dot}`}
+                    ></span>
+                    {projectStatusConfig['ACTIVE'].label}
+                  </Badge>{' '}
+                </SelectItem>
+                <SelectItem value="ON_HOLD">
+                  <Badge
+                    className={`${projectStatusConfig['ON_HOLD'].badge} border-0 gap-2`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${projectStatusConfig['ON_HOLD'].dot}`}
+                    ></span>
+                    {projectStatusConfig['ON_HOLD'].label}
+                  </Badge>
+                </SelectItem>
+                <SelectItem value="COMPLETED">
+                  <Badge
+                    className={`${projectStatusConfig['COMPLETED'].badge} border-0 gap-2`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${projectStatusConfig['COMPLETED'].dot}`}
+                    ></span>
+                    {projectStatusConfig['COMPLETED'].label}
+                  </Badge>{' '}
+                </SelectItem>
+                <SelectItem value="ARCHIVED">
+                  <Badge
+                    className={`${projectStatusConfig['ARCHIVED'].badge} border-0 gap-2`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${projectStatusConfig['ARCHIVED'].dot}`}
+                    ></span>
+                    {projectStatusConfig['ARCHIVED'].label}
+                  </Badge>{' '}
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -120,13 +162,6 @@ const ProjectMemebersTable = ({ members, project }: T_Props) => {
               placeholder="Search"
               className="w-sm border-0 bg-none"
             />
-            {/* <Button
-              // onClick={handleSearch}
-              variant={'ghost'}
-              className="rounder-none"
-            >
-              <Search></Search>
-            </Button> */}
           </div>
 
           <Select onValueChange={setSortVal} value={sortVal}>

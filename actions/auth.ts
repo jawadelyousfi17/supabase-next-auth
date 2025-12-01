@@ -16,7 +16,9 @@ const signUp = async (prevState: any, formData: FormData) => {
     email,
     password,
     options: {
-      emailRedirectTo: `http://localhost:3000/auth/confirm?name=${name}&type=email}`,
+      emailRedirectTo: `${
+        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      }/auth/confirm?name=${name}&type=email}`,
     },
   });
 
@@ -78,7 +80,9 @@ async function signInWithEmail(prevState: any, formData: FormData) {
     options: {
       // set this to false if you do not want the user to be automatically signed up
       shouldCreateUser: false,
-      emailRedirectTo: 'http://localhost:3000/auth/otp-magic-link/callback',
+      emailRedirectTo: `${
+        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      }/auth/otp-magic-link/callback`,
     },
   });
 
@@ -94,7 +98,9 @@ const resetPassword = async (prevState: any, formData: FormData) => {
 
   const email = formData.get('email') as string;
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'http://localhost:3000/password/callback',
+    redirectTo: `${
+      process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    }/password/callback`,
   });
 
   if (error) return { error: "can't send reset link for now, try again later" };
